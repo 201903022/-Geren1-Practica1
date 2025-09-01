@@ -1,10 +1,10 @@
 ---
 title: "Practica 1 - Airbnb NYC 2025"
 output:
+  html_notebook: default
+  pdf_document: default
   html_document:
     df_print: paged
-  pdf_document: default
-  html_notebook: default
 ---
 
 ## Parte I. Manipulación de datos con dplyr
@@ -15,6 +15,7 @@ library(readr)
 library(dplyr)
 
 df <- read_csv("listings.csv")
+options(scipen=999)
 head(df)
 str(df)
 ```
@@ -25,6 +26,7 @@ df <- df %>%
   mutate( 
     price_num = as.numeric(gsub("[$,]", "", price))
       )
+options(scipen=999)
 head(select(df, price, price_num))
 ```
 
@@ -38,6 +40,7 @@ df_filtrado_top_10 <- df %>%
     price_num < 500
   )
 
+options(scipen=999)
 head(df_filtrado_top_10)
 ```
 
@@ -45,6 +48,8 @@ head(df_filtrado_top_10)
 ```{r}
 df_ordenado_availability <- df_filtrado_top_10 %>%
   arrange(desc(availability_365))
+
+options(scipen=999)
 head(df_ordenado_availability)
 ```
 
@@ -53,6 +58,8 @@ head(df_ordenado_availability)
 ```{r}
 df_nueva_columna <- df_ordenado_availability %>%
   mutate(total_revenue = price_num * availability_365)
+
+options(scipen=999)
 head(select(df_nueva_columna, price_num, availability_365, total_revenue))
 ```
 
@@ -65,6 +72,8 @@ df_final <- df_nueva_columna %>%
     availability_365, total_revenue,
     number_of_reviews
   )
+
+options(scipen=999)
 head(df_final)
 ```
 
@@ -86,6 +95,7 @@ resumen_host_loc <- df_final %>%
   ) %>%
   arrange(desc(total_listings))
 
+options(scipen=999)
 head(resumen_host_loc)
 ```
 
