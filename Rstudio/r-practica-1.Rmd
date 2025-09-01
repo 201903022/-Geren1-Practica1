@@ -22,9 +22,9 @@ str(df)
 ### 2. Realiza una transformación para la columna price, asegurándose de quitar el carácter dólar ($) y convirtiendo toda la columna a valor numérico.
 ```{r}
 df <- df %>%
-  mutate(
+  mutate( 
     price_num = as.numeric(gsub("[$,]", "", price))
-  )
+      )
 head(select(df, price, price_num))
 ```
 
@@ -37,7 +37,8 @@ df_filtrado_top_10 <- df %>%
     !is.na(host_location),
     price_num < 500
   )
-print(df_filtrado_top_10)
+
+head(df_filtrado_top_10)
 ```
 
 ### 4.Ordena los datos de mayor a menor disponibilidad (availability_365).
@@ -82,7 +83,6 @@ resumen_host_loc <- df_final %>%
     avg_price = mean(price, na.rm = TRUE),
     total_listings = n(),
     avg_total_revenue = mean(total_revenue, na.rm = TRUE),
-    .groups = "drop"
   ) %>%
   arrange(desc(total_listings))
 
@@ -94,10 +94,9 @@ head(resumen_host_loc)
 ```{r}
 resumen_room_type <- df_final %>%
   group_by(host_location, room_type) %>%
-  summarize(
+  summarise(
     avg_availability = mean(availability_365, na.rm = TRUE),
     n = n(),
-    .groups = "drop_last"
   ) %>%
   arrange(host_location, desc(avg_availability))
 
@@ -198,57 +197,4 @@ ggplot(df_final, aes(x = price, y = availability_365)) +
 - En New York, NY, los precios son más variados, con alojamientos que alcanzan aprox. hasta los 400 USD por noche.
 
 - En otras ubicaciones como Colonie, NY o Stamford, NY, la oferta es más reducida y dispersa, con pocos alojamientos y gran variabilidad en disponibilidad.
-
-```{r}
-ggplot(df_final, aes(x = price, y = availability_365, color = room_type)) +
-  geom_point(alpha = 0.5) +
-  geom_smooth(method = "lm", se = FALSE) +
-  labs(
-    title = "Patrones entre precio y disponibilidad",
-    x = "Precio por noche (USD)",
-    y = "Disponibilidad (días)",
-    color = "Tipo de alojamiento"
-  ) +
-  theme_minimal()
-```
-
-
-```{r}
-top_locaciones <- df_final %>%
-  count(host_location, sort = TRUE) %>%
-  slice_head(n = 7) %>%
-  pull(host_location)
-
-df_toploc <- df_final %>%
-  filter(host_location %in% top_locaciones)
-
-ggplot(df_toploc, aes(x = host_location, y = price, fill = host_location)) +
-  geom_boxplot(outlier.alpha = 0.3) +
-  labs(
-    title = "Distribución de precios por ubicación (Top 6)",
-    x = "Ubicación",
-    y = "Precio por noche (USD)"
-  ) +
-  theme_minimal() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
-```
-
-
-```{r}
-ggplot(df_final, aes(x = price, fill = room_type)) +
-  geom_histogram(bins = 30, alpha = 0.6, position = "identity") +
-  labs(
-    title = "Distribución de precios por tipo de alojamiento",
-    x = "Precio por noche (USD)",
-    y = "Frecuencia",
-    fill = "Tipo de alojamiento"
-  ) +
-  theme_minimal()
-
-```
-
-
-```{r}
-
-```
 
