@@ -1,10 +1,6 @@
 ---
 title: "Practica 1 - Airbnb NYC 2025"
-output:
-  html_document:
-    df_print: paged
-  pdf_document: default
-  html_notebook: default
+output: html_notebook
 ---
 
 ## Parte I. Manipulación de datos con dplyr
@@ -42,7 +38,7 @@ print(df_filtrado_top_10)
 
 ### 4.Ordena los datos de mayor a menor disponibilidad (availability_365).
 ```{r}
-df_ordenado_availability <- df_filtrado_top_10 %>%
+df_ordenado_availability <- df_filtrado %>%
   arrange(desc(availability_365))
 head(df_ordenado_availability)
 ```
