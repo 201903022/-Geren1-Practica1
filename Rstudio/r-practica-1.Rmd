@@ -1,0 +1,174 @@
+---
+title: "Practica 1 - Airbnb NYC 2025"
+output: html_notebook
+---
+Parte I. Manipulación de datos con dplyr
+```{r}
+library(readr)
+library(dplyr)
+# Muestra las primeras filas y la estructura del dataset (head(), str()).
+df <- read_csv("listings.csv")
+head(df)
+str(df)
+
+#Realiza una transformación para la columna price, asegurándose de quitar el
+#carácter dólar ($) y convirtiendo toda la columna a valor numérico.
+df <- df %>%
+  mutate(
+    price_num = as.numeric(gsub("[$,]", "", price))
+  )
+
+#Filtra los registros para mantener solo alojamientos con más de 10 reseñas y
+#un precio menor a $500 por noche. Además, excluye valores faltantes para la
+# columna host_location.
+df_filtrado <- df %>%
+  filter(
+    number_of_reviews > 10,
+    !is.na(host_location),
+    price_num < 500
+  )
+
+# Ordena los datos de mayor a menor disponibilidad (availability_365).
+
+df_ordenado <- df_filtrado %>%
+  arrange(desc(availability_365))
+
+# Crea una nueva columna llamada total_revenue, que represente el ingreso
+# potencial en un año (price * availability_365).
+df_enriquecido <- df_ordenado %>%
+  mutate(total_revenue = price_num * availability_365)
+
+s#Selecciona las columnas host_location, room_type, price, availability_365,total_revenue number_of_reviews.
+
+df_final <- df_enriquecido %>%
+  select(
+    host_location, room_type,
+    price = price_num,
+    availability_365, total_revenue,
+    number_of_reviews
+  )
+
+# Vista rápida del resultado
+head(df_final)
+
+
+```
+Parte II. Resúmenes y agrupaciones
+```{r}
+library(dplyr)
+#Agrupa los datos por host_location y calcula:
+    #○ Precio promedio por noche.
+    #○ Número total de alojamientos.
+    #○ Ingreso potencial promedio (mean(total_revenue)).
+
+resumen_loc <- df_final %>%
+  group_by(host_location) %>%
+  summarize(
+    avg_price = mean(price, na.rm = TRUE),
+    total_listings = n(),
+    avg_total_revenue = mean(total_revenue, na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  arrange(desc(total_listings))
+
+# Vista rápida del resultado
+head(resumen_loc)
+
+ #Agrupa los datos por room_type dentro de cada host_location y calcula la
+#disponibilidad promedio.
+
+
+resumen_loc_tipo <- df_final %>%
+  group_by(host_location, room_type) %>%
+  summarize(
+    avg_availability = mean(availability_365, na.rm = TRUE),
+    n = n(),
+    .groups = "drop_last"
+  ) %>%
+  arrange(host_location, desc(avg_availability))
+
+# Vista rápida del resultado
+head(resumen_loc_tipo)
+
+```
+
+Gráfico 3. Facetado (facet_wrap)
+Gráfico 1. Dispersión (scatter plot)
+● Crea un gráfico de dispersión donde el eje X sea el precio y el eje Y el número
+de reseñas (number_of_reviews).
+● Diferencia los puntos por room_type, utiliza el parámetro color en la función
+
+
+```{r}
+
+library(ggplot2)
+
+# Gráfico 1: Diagrama de dispersión
+# - Eje X: price (precio por noche)
+# - Eje Y: number_of_reviews (número de reseñas)
+# - Color: room_type (tipo de habitación)
+# -----------------------------------------------------------
+ggplot(df_final, aes(x = price, y = number_of_reviews, color = room_type)) +
+  geom_point(alpha = 0.6) +
+  labs(
+    title = "Relación entre precio y número de reseñas",
+    x = "Precio por noche (USD)",
+    y = "Número de reseñas",
+    color = "Tipo de alojamiento"
+  ) +
+  theme_minimal()
+
+```
+Gráfico 2. Barras (bar plot)
+● Crea un gráfico con la evolución del precio promedio de los alojamientos en
+función del room_type.
+● Usa geom_col(), asegurándose de que se diferencie el tipo de alojamiento con
+el parámetro fill en la función aes.
+```{r}
+precio_por_tipo <- df_final %>%
+  group_by(room_type) %>%
+  summarize(avg_price = mean(price, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+ggplot(precio_por_tipo, aes(x = room_type, y = avg_price, fill = room_type)) +
+  geom_col() +
+  labs(
+    title = "Precio promedio por tipo de alojamiento",
+    x = "Tipo de alojamiento",
+    y = "Precio promedio (USD)",
+    fill = "Tipo"
+  ) +
+  theme_minimal()
+
+```
+
+Gráfico 3. Facetado (facet_wrap)
+● Crea un gráfico de dispersión donde se muestre la relación entre
+disponibilidad (availability_365) y precio (price).
+● Divide el gráfico en paneles por host_location usando
+facet_wrap(~host_location)
+```{r}
+# Top 8 ubicaciones por cantidad de listings en el df_final
+top_locs <- df_final %>%
+  count(host_location, sort = TRUE) %>%
+  slice_head(n = 8) %>%
+  pull(host_location)
+
+# Filtrar solo esas ubicaciones
+df_facet <- df_final %>%
+  filter(host_location %in% top_locs)
+
+# Graficar
+ggplot(df_facet, aes(x = price, y = availability_365)) +
+  geom_point(alpha = 0.6) +
+  facet_wrap(~ host_location) +
+  labs(
+    title = "Disponibilidad vs Precio (facet por ubicacion)",
+    x = "Precio por noche (USD)",
+    y = "Disponibilidad (dias)"
+  ) +
+  theme_minimal()
+
+```
+
