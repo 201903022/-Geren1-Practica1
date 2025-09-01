@@ -16,6 +16,18 @@ library(dplyr)
 
 df <- read_csv("listings.csv")
 options(scipen=999)
+
+
+
+
+
+
+
+
+
+
+
+
 head(df)
 str(df)
 ```
